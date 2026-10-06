@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>دارت میلیاردها</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red:#ff4757; --yellow:#ffd166; --turq:#3ee3c4; --purple:#a06bff;
+    --ink:#241433; --green:#2bb37a;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{ margin:0; padding:0; width:100%; height:100%; font-family:'Vazirmatn','Tahoma',sans-serif;
+    color:#fff; overflow:hidden; user-select:none; }
+  body{
+    background: linear-gradient(120deg,#6a3bd6,#d6418f,#ff8a3d,#3ee3c4,#6a3bd6);
+    background-size: 400% 400%;
+    animation: gradientMove 18s ease infinite;
+  }
+  @keyframes gradientMove{ 0%{background-position:0% 50%;} 50%{background-position:100% 50%;} 100%{background-position:0% 50%;} }
+
+  #app{ position:fixed; inset:0; width:100%; height:100%; }
+
+  /* ====== SCREEN BASE (همه صفحه‌ها absolute می‌مونن) ====== */
+  .screen{
+    position:absolute; inset:0;
+    display:none;
+    flex-direction:column;
+    overflow-y:auto;
+    z-index:1;
+  }
+  .screen.active{ display:flex; }
+
+  /* پس‌زمینه‌ی اعداد شناور */
+  .floaters{ position:absolute; inset:0; overflow:hidden; z-index:0; pointer-events:none; }
+  .floater{ position:absolute; bottom:-40px; color:rgba(255,255,255,.16); font-weight:800; white-space:nowrap;
+    animation: floatUp linear infinite; }
+  @keyframes floatUp{ from{ transform:translateY(0) rotate(0deg); opacity:0;} 10%{opacity:1;} 90%{opacity:1;} to{ transform:translateY(-120vh) rotate(8deg); opacity:0;} }
+
+  /* دکمه صدا */
+  .mute-btn{ position:fixed; top: calc(12px + env(safe-area-inset-top,0px)); left:14px; z-index:50;
+    font-size:18px; background:rgba(255,255,255,.18); border:1.5px solid rgba(255,255,255,.4); color:#fff;
+    border-radius:12px; padding:8px 10px; cursor:pointer; backdrop-filter: blur(4px); }
+
+  /* ====== SCREEN 1: START ====== */
+  #start{ align-items:center; justify-content:center; text-align:center; padding:24px 16px; }
+  .start-content{ max-width:440px; width:100%; }
+  .start-title{ font-size:clamp(26px,7vw,36px); font-weight:900; margin-bottom:4px; text-shadow:0 4px 18px rgba(0,0,0,.3); }
+  .start-sub{ font-size:14.5px; color:#fff; opacity:.9; margin-bottom:4px; font-weight:700; }
+  .start-teacher{ font-size:13px; color:#fff; opacity:.85; margin-bottom:18px; }
+  .deco-wheel{ width:150px; height:150px; margin:0 auto 18px; animation: spinSlow 14s linear infinite; filter: drop-shadow(0 8px 20px rgba(0,0,0,.3)); }
+  @keyframes spinSlow{ from{transform:rotate(0deg);} to{transform:rotate(360deg);} }
+  .name-box{ margin-bottom:18px; }
+  .name-box label{ display:block; font-size:13px; margin-bottom:8px; font-weight:700; opacity:.9; }
+  .name-box input{ width:100%; max-width:300px; font-family:inherit; font-size:17px; font-weight:700; text-align:center;
+    padding:14px 16px; border-radius:14px; border:2px solid rgba(255,255,255,.4); background: rgba(255,255,255,.15); color:#fff; outline:none; }
+  .name-box input::placeholder{ color:rgba(255,255,255,.7); }
+  .name-box input:focus{ border-color:#fff; background:rgba(255,255,255,.25); }
+  .btn{ font-family:inherit; border:none; cursor:pointer; font-size:16px; font-weight:800; color:#241433;
+    padding:15px 26px; border-radius:16px; transition:transform .15s ease; animation: pulseBtn 2.2s ease-in-out infinite; }
+  .btn:active{ transform:scale(.93); }
+  @keyframes pulseBtn{ 0%,100%{ box-shadow:0 0 0 0 rgba(255,255,255,.35);} 50%{ box-shadow:0 0 0 10px rgba(255,255,255,0);} }
+  .btn-primary{ background: linear-gradient(135deg,#ffd166,#ff9f43); }
+  .btn-row{ display:flex; gap:12px; flex-wrap:wrap; justify-content:center; }
+
+  /* ====== SCREEN 2: LESSON ====== */
+  #lesson{ background: rgba(20,10,40,.35); }
+  .lesson-body{ padding: calc(20px + env(safe-area-inset-top,0px)) 16px 30px;
+    max-width:680px; margin:0 auto; width:100%; }
+  .lesson-title{ font-size:clamp(20px,5.5vw,26px); font-weight:900; text-align:center; margin-bottom:18px; text-shadow:0 2px 10px rgba(0,0,0,.3); }
+  .lesson-card{ background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.25); border-radius:16px; padding:16px 18px; margin-bottom:14px; backdrop-filter: blur(4px); }
+  .lesson-card p{ margin:0 0 8px; font-size:14.5px; line-height:2; }
+  .lesson-card p:last-child{ margin-bottom:0; }
+  .lesson-highlight{ background: rgba(255,209,102,.2); border:1.5px solid rgba(255,209,102,.5); border-radius:16px; padding:16px 18px; margin-bottom:16px; }
+  .lesson-highlight h4{ margin:0 0 8px; font-size:15px; color:#ffd166; }
+  .lesson-highlight p{ margin:4px 0; font-size:14.5px; font-weight:700; }
+  .table-wrap{ overflow-x:auto; margin-bottom:16px; border-radius:14px; }
+  table.simple-table{ direction:ltr; width:100%; border-collapse:collapse; background:rgba(255,255,255,.95); color:#241433; font-size:clamp(13px,3.2vw,16px); }
+  table.simple-table th, table.simple-table td{ border:1px solid rgba(36,20,51,.15); text-align:center; padding:10px 6px; font-weight:800; }
+  table.simple-table th{ background: rgba(160,107,255,.18); }
+  .lesson-note{ text-align:center; font-size:13.5px; font-weight:700; color:#ffd166; margin-bottom:18px; }
+  .lesson-foot{ text-align:center; padding-bottom:10px; }
+
+  /* ====== SCREEN 3: GAME ====== */
+  #game{ background: rgba(20,10,40,.15); }
+
+  .hud{ display:flex; align-items:center; justify-content:space-between; gap:8px;
+    padding: calc(52px + env(safe-area-inset-top,0px)) 16px 4px; }
+  .hud-left{ font-size:12px; font-weight:700; opacity:.9; }
+  .hud-left b{ display:block; font-size:14px; }
+  .hud-mid{ text-align:center; }
+  .score-val{ font-size:20px; font-weight:900; color:#ffd166; }
+  .score-label{ font-size:9px; opacity:.85; }
+  .hud-right{ font-size:12px; font-weight:700; opacity:.9; text-align:left; }
+
+  .progress-wrap{ margin: 4px 16px 0; height:6px; background:rgba(255,255,255,.2); border-radius:99px; overflow:hidden; }
+  .progress-fill{ height:100%; background: linear-gradient(90deg,#ffd166,#ff9f43); width:0%; transition: width .3s ease; }
+
+  .game-body{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    padding:14px 16px 20px; gap:14px; }
+
+  .question-box{ width:100%; max-width:440px; background:rgba(255,255,255,.95); color:var(--ink);
+    border-radius:18px; padding:16px 18px; text-align:center; font-size:16px; font-weight:800;
+    line-height:1.7; box-shadow:0 10px 26px rgba(0,0,0,.25); }
+
+  .dart-wheel-wrap{ position:relative; width:min(72vw,280px); height:min(72vw,280px); margin-top:6px; }
+  .dart-wheel{ width:100%; height:100%; border-radius:50%; position:relative;
+    background: conic-gradient(var(--red) 0deg 90deg, var(--yellow) 90deg 180deg, var(--turq) 180deg 270deg, var(--purple) 270deg 360deg);
+    border:6px solid #fff; box-shadow:0 12px 32px rgba(0,0,0,.35); }
+  .wheel-center-dot{ position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+    width:14%; height:14%; background:#fff; border-radius:50%; box-shadow:0 2px 8px rgba(0,0,0,.3); z-index:3; }
+
+  /* گزینه‌ها روی چرخ — با موقعیت مطلق */
+  #wheelOpts{ position:absolute; inset:0; pointer-events:none; }
+  .wheel-opt{
+    position:absolute;
+    min-width:56px;
+    max-width:90px;
+    padding:6px 8px;
+    display:flex; align-items:center; justify-content:center;
+    text-align:center;
+    font-size:clamp(11px,2.9vw,13px);
+    font-weight:900;
+    color:#fff;
+    text-shadow:0 1px 4px rgba(0,0,0,.75);
+    background:rgba(0,0,0,.18);
+    border-radius:10px;
+    cursor:pointer;
+    pointer-events:auto;
+    line-height:1.25;
+    word-break:break-word;
+    transition: background .2s ease, transform .15s ease;
+    transform:translate(-50%,-50%);
+  }
+  .wheel-opt:active{ transform:translate(-50%,-50%) scale(.92); }
+  .wheel-opt.disabled{ pointer-events:none; opacity:.65; }
+  .wheel-opt.correct-flash{ background: rgba(43,179,122,.85); }
+  .wheel-opt.wrong-flash{ background: rgba(255,71,87,.85); }
+
+  .dart-arrow{ position:fixed; font-size:30px; z-index:60; opacity:0; pointer-events:none; }
+
+  .feedback-msg{ min-height:30px; font-size:16px; font-weight:900; text-align:center; text-shadow:0 2px 8px rgba(0,0,0,.3); }
+
+  .shake{ animation: shakeit .4s ease; }
+  @keyframes shakeit{ 0%,100%{ transform: translateX(0); } 20%{ transform: translateX(-10px);} 40%{ transform: translateX(10px);} 60%{ transform: translateX(-7px);} 80%{ transform: translateX(7px);} }
+
+  .spark{ position:fixed; z-index:55; pointer-events:none; font-size:20px; transition: all .6s ease-out; }
+
+  /* ====== SCREEN 4: FINISH ====== */
+  #finish{ align-items:center; justify-content:flex-start; text-align:center; padding:32px 16px; }
+  .finish-inner{ width:100%; max-width:480px; margin:0 auto; }
+  .finish-title{ font-size:clamp(24px,6vw,32px); font-weight:900; margin-bottom:4px; }
+  .finish-sub{ font-size:14px; opacity:.9; margin-bottom:16px; }
+  .finish-score{ font-size:26px; font-weight:900; color:#ffd166; margin-bottom:18px; text-shadow:0 2px 10px rgba(0,0,0,.3); }
+  .report-wrap{ width:100%; text-align:right; margin-bottom:18px; }
+  .report-perfect{ background:rgba(62,227,196,.2); border:1.5px solid rgba(62,227,196,.5); border-radius:16px; padding:16px; font-weight:800; font-size:15px; text-align:center; }
+  .report-h{ font-size:14px; font-weight:800; margin-bottom:10px; text-align:center; opacity:.9; }
+  .report-item{ background:rgba(255,255,255,.12); border:1.5px solid rgba(255,255,255,.2); border-radius:14px; padding:12px 14px; margin-bottom:10px; font-size:13px; line-height:1.8; backdrop-filter: blur(4px); }
+  .report-item .ri-num{ font-size:11px; opacity:.75; font-weight:700; margin-bottom:3px; }
+  .report-item .ri-q{ font-weight:800; margin-bottom:6px; }
+  .report-item .ri-wrong{ color:#ff8a93; text-decoration: line-through; }
+  .report-item .ri-correct{ color:#6dfccb; font-weight:800; }
+  .report-item .ri-hint{ color:#ffe9a8; margin-top:4px; }
+
+  @media (min-width:700px){ .btn{ font-size:17px; padding:16px 30px; } }
+</style>
+</head>
+<body>
+<div id="app">
+<div class="floaters" id="floaters"></div>
+<button class="mute-btn" id="muteBtn" onclick="toggleMute()">🔊</button>
+
+  <!-- ===================== SCREEN 1: START ===================== -->
+  <div class="screen active" id="start">
+    <div class="start-content">
+      <div class="start-title">🎯 دارت میلیاردها 🎯</div>
+      <div class="start-sub">ریاضی پنجم — فصل اول: معرفی میلیارد</div>
+      <div class="start-teacher">آموزگار: خانم مرادنژاد</div>
+      <svg class="deco-wheel" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="46" fill="#fff"/>
+        <path d="M50 50 L50 4 A46 46 0 0 1 96 50 Z" fill="#ff4757"/>
+        <path d="M50 50 L96 50 A46 46 0 0 1 50 96 Z" fill="#ffd166"/>
+        <path d="M50 50 L50 96 A46 46 0 0 1 4 50 Z" fill="#3ee3c4"/>
+        <path d="M50 50 L4 50 A46 46 0 0 1 50 4 Z" fill="#a06bff"/>
+        <circle cx="50" cy="50" r="30" fill="#fff"/>
+        <circle cx="50" cy="50" r="30" fill="none" stroke="#241433" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="18" fill="#ff4757"/>
+        <circle cx="50" cy="50" r="9" fill="#fff"/>
+        <circle cx="50" cy="50" r="9" fill="none" stroke="#241433" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="3" fill="#241433"/>
+      </svg>
+      <div class="name-box">
+        <label>نام دانش‌آموز:</label>
+        <input type="text" id="studentName" placeholder="مثلاً: علی محمدی" maxlength="30">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-primary" onclick="goToLesson()">📚 مشاهده درس‌نامه</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SCREEN 2: LESSON ===================== -->
+  <div class="screen" id="lesson">
+    <div class="lesson-body">
+      <div class="lesson-title">📚 درس‌نامه: میلیارد چگونه ساخته می‌شود؟</div>
+
+      <div class="lesson-card">
+        <p>🔸 ۱۰ تا یک = یک «ده»</p>
+        <p>🔸 ۱۰ تا ده = یک «صد»</p>
+        <p>🔸 ۱۰ تا صد = یک «هزار»</p>
+        <p>🔸 ۱۰ تا هزار = یک «ده هزار»</p>
+        <p>🔸 ۱۰ تا ده‌هزار = یک «صد هزار»</p>
+        <p>🔸 ۱۰ تا صدهزار = یک «میلیون»</p>
+      </div>
+
+      <div class="lesson-highlight">
+        <h4>⭐ حالا برای میلیارد:</h4>
+        <p>✅ ۱۰ تا ۱۰۰ میلیون = یک «میلیارد»</p>
+        <p>✅ ۱۰۰۰ تا یک میلیون = یک «میلیارد»</p>
+      </div>
+
+      <div class="table-wrap">
+        <table class="simple-table">
+          <tr><th>میلیارد</th><th>میلیون</th><th>هزار</th><th>یکان</th></tr>
+          <tr><td>۱</td><td>۰۰۰</td><td>۰۰۰</td><td>۰۰۰</td></tr>
+        </table>
+      </div>
+      <div class="lesson-note" style="margin-top:-6px;">بزرگ‌ترین مرتبه (میلیارد) سمت چپ است و یکان سمت راست — دقیقاً مثل کتاب ریاضی</div>
+
+      <div class="lesson-note">💡 یک میلیارد = ۱٬۰۰۰٬۰۰۰٬۰۰۰ (۱۰ رقم، یعنی ۱۰۰۰ میلیون)</div>
+
+      <div class="lesson-foot">
+        <button class="btn btn-primary" onclick="goToGame()">🎯 برو به بازی!</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== SCREEN 3: GAME ===================== -->
+  <div class="screen" id="game">
+    <div class="hud">
+      <div class="hud-left"><span>دانش‌آموز</span><b id="hudName">—</b></div>
+      <div class="hud-mid">
+        <div class="score-val" id="scoreDisplay">۰</div>
+        <div class="score-label">امتیاز</div>
+      </div>
+      <div class="hud-right" id="qCountDisplay">سؤال ۰ از ۱۰</div>
+    </div>
+    <div class="progress-wrap"><div class="progress-fill" id="progressFill"></div></div>
+
+    <div class="game-body" id="gameBody">
+      <div class="question-box" id="questionBox">سؤال</div>
+      <div class="dart-wheel-wrap">
+        <div class="dart-wheel" id="dartWheel">
+          <div class="wheel-center-dot"></div>
+        </div>
+        <div id="wheelOpts"></div>
+      </div>
+      <div class="feedback-msg" id="feedbackMsg"></div>
+    </div>
+  </div>
+  <div class="dart-arrow" id="dartArrow">🎯</div>
+
+  <!-- ===================== SCREEN 4: FINISH ===================== -->
+  <div class="screen" id="finish">
+    <div class="finish-inner">
+      <div style="font-size:54px;">🏆</div>
+      <div class="finish-title">پایان بازی!</div>
+      <div class="finish-sub" id="finishName"></div>
+      <div class="finish-score" id="finishScore"></div>
+      <div class="report-wrap" id="reportWrap"></div>
+      <button class="btn btn-primary" onclick="restartGame()">🔄 بازی دوباره</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ======================================================
+   دارت میلیاردها — بازی آموزشی ریاضی پنجم
+====================================================== */
+
+/* ---------- اعداد فارسی با جداکننده ---------- */
+const faDigits = n => String(n).replace(/\d/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]);
+function faNum(n){
+  let s = Math.abs(n).toLocaleString('en-US');
+  s = s.replace(/,/g,'٬');
+  return faDigits(s);
+}
+
+/* ---------- صدا ---------- */
+let audioCtx=null, musicOn=true, musicTimer=null;
+function ac(){ if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); } return audioCtx; }
+function tone(freq,dur,type='sine',vol=0.1,delay=0){
+  try{
+    const ctx=ac(); const o=ctx.createOscillator(), g=ctx.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(ctx.destination);
+    const t0=ctx.currentTime+delay;
+    g.gain.setValueAtTime(0.0001,t0);
+    g.gain.exponentialRampToValueAtTime(vol,t0+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+    o.start(t0); o.stop(t0+dur+0.02);
+  }catch(e){}
+}
+function soundCorrect(){ if(!musicOn) return; [660,880,1100].forEach((f,i)=>tone(f,0.15,'triangle',0.13,i*0.09)); }
+function soundWrong(){ if(!musicOn) return; tone(300,0.2,'sawtooth',0.1); tone(220,0.22,'sawtooth',0.09,0.1); }
+function soundThrow(){ if(!musicOn) return; tone(500,0.08,'square',0.08); }
+function soundWin(){ if(!musicOn) return; [523,659,784,1046,1318].forEach((f,i)=>tone(f,0.2,'triangle',0.12,i*0.13)); }
+
+const BG_NOTES = [392,440,494,440,392,330,392,440];
+let bgIdx=0;
+function playBgStep(){ if(!musicOn) return; tone(BG_NOTES[bgIdx%BG_NOTES.length], 0.5, 'sine', 0.035); bgIdx++; }
+function startMusic(){ if(musicTimer) return; musicTimer = setInterval(playBgStep, 650); }
+function stopMusic(){ if(musicTimer){ clearInterval(musicTimer); musicTimer=null; } }
+function toggleMute(){
+  musicOn = !musicOn;
+  document.getElementById('muteBtn').textContent = musicOn ? '🔊' : '🔇';
+  if(musicOn) startMusic(); else stopMusic();
+}
+
+/* ---------- اعداد شناور پس‌زمینه ---------- */
+(function buildFloaters(){
+  const wrap = document.getElementById('floaters');
+  const words = ['۱٬۰۰۰٬۰۰۰٬۰۰۰','میلیارد','میلیون','۱۰۰۰ برابر','۱۰ رقم'];
+  for(let i=0;i<14;i++){
+    const s = document.createElement('span');
+    s.className='floater';
+    s.textContent = words[i%words.length];
+    s.style.left = (Math.random()*90)+'%';
+    s.style.fontSize = (16+Math.random()*22)+'px';
+    s.style.animationDuration = (10+Math.random()*10)+'s';
+    s.style.animationDelay = (Math.random()*10)+'s';
+    wrap.appendChild(s);
+  }
+})();
+
+/* ---------- ناوبری صفحه‌ها ---------- */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.getElementById(id).scrollTop = 0;
+}
+let studentName='';
+function goToLesson(){
+  const input = document.getElementById('studentName');
+  const name = input.value.trim();
+  if(!name){ input.focus(); input.style.borderColor='#ff4757'; return; }
+  studentName = name;
+  try{ ac(); startMusic(); }catch(e){}
+  showScreen('lesson');
+}
+function goToGame(){
+  showScreen('game');
+  document.getElementById('hudName').textContent = studentName;
+  resetGameState();
+  loadQuestion();
+}
+function restartGame(){
+  showScreen('start');
+}
+
+/* ---------- ۱۰ سؤال ---------- */
+const QUESTIONS = [
+  { q:'یک میلیارد چند تا یک میلیون است؟', correct:1000, wrongs:[100,10000,100000], explain:'۱۰۰۰ تا یک میلیون = یک میلیارد' },
+  { q:'در عدد ۴٬۱۶۴٬۲۵۲٬۰۰۰ (جمعیت آسیا)، رقم میلیاردها کدام است؟', correct:4, wrongs:[1,6,2], explain:'رقم میلیاردها اولین رقم از سمت چپ است' },
+  { q:'عدد «هفت میلیارد و دویست و نود و شش میلیون و پانصد و چهل و سه هزار و پانصد و هفتاد» کدام است؟', correct:7296543570, wrongs:[729654357,72965435700,72965430570], explain:'۷ میلیارد + ۲۹۶ میلیون + ۵۴۳ هزار + ۵۷۰' },
+  { q:'۱۰ تا ۱۰۰ میلیون می‌شود...', correct:1000000000, wrongs:[100000000,10000000,10000000000], explain:'۱۰ × ۱۰۰ میلیون = ۱۰۰۰ میلیون = یک میلیارد' },
+  { q:'کدام عدد بزرگ‌تر است؟', correct:1000753000, wrongs:[999785000,99978500,100075300], explain:'عددی که رقم‌های بیشتری دارد، بزرگ‌تر است' },
+  { q:'۹۹۹٬۷۸۵٬۰۰۰ به نزدیک‌ترین میلیارد گرد شود:', correct:1000000000, wrongs:[999000000,999800000,100000000], explain:'چون به میلیارد نزدیک‌تر است، به یک میلیارد گرد می‌شود' },
+  { q:'۲٬۵۰۰٬۰۰۰ ریال چند تومان است؟', correct:250000, wrongs:[2500000,25000,25000000], explain:'برای تبدیل ریال به تومان، یک صفر کم می‌کنیم' },
+  { q:'۵۰۰٬۰۰۰ تومان چند ریال است؟', correct:5000000, wrongs:[500000,50000,50000000], explain:'برای تبدیل تومان به ریال، یک صفر اضافه می‌کنیم' },
+  { q:'۸۷۰ میلیون منهای ۷۰۰ میلیون چند است؟', correct:170000000, wrongs:[17000000,1700000000,1700000], explain:'۸۷۰ − ۷۰۰ = ۱۷۰ میلیون' },
+  { q:'۲۹۵٬۰۰۰٬۰۰۰ ریال ضربدر ۶۰ دستگاه = ؟', correct:17700000000, wrongs:[1770000000,177000000000,177000000], explain:'۲۹۵ میلیون × ۶۰ = ۱۷٬۷۰۰ میلیون = ۱۷ میلیارد و ۷۰۰ میلیون' },
+];
+const POINTS_PER_CORRECT = 10;
+
+/* زاویه‌ی مرکز هر بخش چرخ (درجه) — مطابق conic-gradient */
+const SECTOR_ANGLES = [45, 135, 225, 315];
+/* موقعیت هر گزینه روی چرخ (درصد) — با زاویه هماهنگ:
+   45° = بالا-راست، 135° = پایین-راست، 225° = پایین-چپ، 315° = بالا-چپ */
+const OPT_POS = [
+  { x: 68, y: 30 },  // قرمز (بالا-راست)
+  { x: 68, y: 70 },  // زرد (پایین-راست)
+  { x: 32, y: 70 },  // فیروزه‌ای (پایین-چپ)
+  { x: 32, y: 30 },  // بنفش (بالا-چپ)
+];
+
+/* ---------- وضعیت ---------- */
+let score=0, qIndex=0, answering=false;
+let wrongReport=[];
+let currentQ=null, currentOptions=[];
+
+function resetGameState(){
+  score=0; qIndex=0; wrongReport=[]; answering=false;
+  updateHUD();
+}
+function updateHUD(){
+  document.getElementById('scoreDisplay').textContent = faDigits(score);
+  document.getElementById('qCountDisplay').textContent = `سؤال ${faDigits(Math.min(qIndex,10))} از ۱۰`;
+  document.getElementById('progressFill').style.width = (Math.min(qIndex,10)/10*100)+'%';
+}
+
+/* ---------- بارگذاری سؤال ---------- */
+function loadQuestion(){
+  if(qIndex>=10){ endGame(); return; }
+  currentQ = QUESTIONS[qIndex];
+  qIndex++;
+  answering=true;
+  updateHUD();
+
+  document.getElementById('questionBox').textContent = currentQ.q;
+  document.getElementById('feedbackMsg').textContent='';
+
+  const opts = [currentQ.correct, ...currentQ.wrongs].sort(()=>Math.random()-0.5);
+  currentOptions = opts;
+
+  const wrap = document.getElementById('wheelOpts');
+  wrap.innerHTML='';
+  opts.forEach((val,i)=>{
+    const div = document.createElement('div');
+    div.className='wheel-opt';
+    div.dataset.idx=i;
+    div.textContent = faNum(val);
+    div.style.left = OPT_POS[i].x + '%';
+    div.style.top  = OPT_POS[i].y + '%';
+    div.onclick = ()=>selectAnswer(i, val, div, SECTOR_ANGLES[i]);
+    wrap.appendChild(div);
+  });
+}
+
+/* ---------- پرتاب دارت ---------- */
+function throwDartTo(angleDeg){
+  const wheelRect = document.getElementById('dartWheel').getBoundingClientRect();
+  const cx = wheelRect.left + wheelRect.width/2;
+  const cy = wheelRect.top + wheelRect.height/2;
+  const R = wheelRect.width/2 * 0.55;
+  const rad = angleDeg*Math.PI/180;
+  const tx = cx + R*Math.sin(rad);
+  const ty = cy - R*Math.cos(rad);
+
+  const dart = document.getElementById('dartArrow');
+  dart.style.transition='none';
+  dart.style.left = (window.innerWidth/2)+'px';
+  dart.style.top = (window.innerHeight-30)+'px';
+  dart.style.transform = 'translate(-50%,-50%) rotate(0deg)';
+  dart.style.opacity='1';
+  void dart.offsetWidth;
+  dart.style.transition='left .45s cubic-bezier(.2,.7,.3,1), top .45s cubic-bezier(.2,.7,.3,1), transform .45s ease';
+  dart.style.left = tx+'px';
+  dart.style.top = ty+'px';
+  dart.style.transform = `translate(-50%,-50%) rotate(${angleDeg+90}deg)`;
+  soundThrow();
+}
+
+function spawnSpark(x,y){
+  const emojis=['✨','⭐','💫'];
+  for(let i=0;i<6;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    s.textContent = emojis[i%emojis.length];
+    s.style.left=x+'px'; s.style.top=y+'px';
+    document.body.appendChild(s);
+    const ang = Math.random()*Math.PI*2, dist=30+Math.random()*30;
+    requestAnimationFrame(()=>{
+      s.style.left=(x+Math.cos(ang)*dist)+'px';
+      s.style.top=(y+Math.sin(ang)*dist)+'px';
+      s.style.opacity='0';
+    });
+    setTimeout(()=>s.remove(),650);
+  }
+}
+
+/* ---------- انتخاب پاسخ ---------- */
+function selectAnswer(idx, val, el, angle){
+  if(!answering) return;
+  answering=false;
+  document.querySelectorAll('.wheel-opt').forEach(o=>o.classList.add('disabled'));
+
+  throwDartTo(angle);
+
+  setTimeout(()=>{
+    const isCorrect = val===currentQ.correct;
+    const wheelRect = document.getElementById('dartWheel').getBoundingClientRect();
+    const cx = wheelRect.left + wheelRect.width/2;
+    const cy = wheelRect.top + wheelRect.height/2;
+
+    if(isCorrect){
+      score += POINTS_PER_CORRECT;
+      updateHUD();
+      soundCorrect();
+      el.classList.add('correct-flash');
+      spawnSpark(cx + wheelRect.width/2*0.55*Math.sin(angle*Math.PI/180),
+                 cy - wheelRect.width/2*0.55*Math.cos(angle*Math.PI/180));
+      document.getElementById('feedbackMsg').textContent = '🎯 آفرین! درست بود!';
+      document.getElementById('feedbackMsg').style.color = '#6dffcb';
+    } else {
+      soundWrong();
+      el.classList.add('wrong-flash');
+      const gameBody = document.getElementById('gameBody');
+      gameBody.classList.remove('shake'); void gameBody.offsetWidth; gameBody.classList.add('shake');
+      document.getElementById('feedbackMsg').textContent = `❌ نشد! جواب: ${faNum(currentQ.correct)}`;
+      document.getElementById('feedbackMsg').style.color = '#ff8a93';
+      wrongReport.push({ num:qIndex, q:currentQ.q, chosen:val, correct:currentQ.correct, explain:currentQ.explain });
+    }
+
+    setTimeout(()=>{
+      document.getElementById('dartArrow').style.opacity='0';
+      if(qIndex>=10){ endGame(); } else { loadQuestion(); }
+    }, 1300);
+  }, 480);
+}
+
+/* ---------- پایان بازی ---------- */
+function endGame(){
+  document.getElementById('finishName').textContent = `دانش‌آموز: ${studentName}`;
+  document.getElementById('finishScore').textContent =
+    `امتیاز نهایی: ${faDigits(score)} از ${faDigits(QUESTIONS.length*POINTS_PER_CORRECT)}`;
+
+  const reportWrap = document.getElementById('reportWrap');
+  if(wrongReport.length===0){
+    reportWrap.innerHTML = `<div class="report-perfect">🌟 آفرین! هیچ غلطی نداشتی!</div>`;
+  } else {
+    reportWrap.innerHTML = `<div class="report-h">📋 گزارش غلط‌ها</div>` + wrongReport.map(w=>`
+      <div class="report-item">
+        <div class="ri-num">سؤال ${faDigits(w.num)}</div>
+        <div class="ri-q">${w.q}</div>
+        <div>پاسخ تو: <span class="ri-wrong">❌ ${faNum(w.chosen)}</span></div>
+        <div>پاسخ درست: <span class="ri-correct">✅ ${faNum(w.correct)}</span></div>
+        <div class="ri-hint">💡 راهنما: ${w.explain}</div>
+      </div>
+    `).join('');
+  }
+
+  soundWin();
+  showScreen('finish');
+}
+</script>
+</body>
+</html>
